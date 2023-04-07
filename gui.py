@@ -64,7 +64,7 @@ class MainWindow(QWidget):
 
         # Images in folder
         group_box3 = QGroupBox("Folder content:")
-        group_box3.setFixedSize(300, 100)  # Nastaví velikost okna QGroupBox
+        group_box3.setFixedSize(300, 100)  
 
         group_layout3 = QVBoxLayout()
 
@@ -200,13 +200,13 @@ class MainWindow(QWidget):
         hbox_foto_name.addWidget(save_button)
         group_layout3.addLayout(hbox_foto_name)
 
-        # Tlačítka "foto" a "spustit živý náhled"
+        # Buttons "foto" and "Start live view"
         hbox_buttons = QHBoxLayout()
         self.print_folder_button = QPushButton("Foto", self)
         self.print_folder_button.clicked.connect(self.take_picture)
         hbox_buttons.addWidget(self.print_folder_button)
 
-        self.live_view_button = QPushButton('Spustit živý náhled', self)
+        self.live_view_button = QPushButton('Start live view', self)
         self.live_view_button.clicked.connect(self.start_live_view)
         hbox_buttons.addWidget(self.live_view_button)
         group_layout3.addLayout(hbox_buttons)
@@ -217,7 +217,7 @@ class MainWindow(QWidget):
         
 
 
-        # Spustí funkci po zvolení hodnoty z rozbalovacího seznamu
+        # functions to run after combo box change
         self.combo_box1.currentIndexChanged.connect(self.cam_box_change)
         self.combo_box2.currentIndexChanged.connect(self.iso_val_change)
         self.combo_box3.currentIndexChanged.connect(self.modes_val_change)
@@ -232,7 +232,7 @@ class MainWindow(QWidget):
         self.setLayout(layout)
 
         self.setWindowTitle('Camera Control')
-        #self.setFixedSize(600, 600)  # Nastaví velikost okna
+        #self.setFixedSize(600, 600)  
         self.show()
 
 #-------------------Functions--------------------------------
@@ -820,7 +820,7 @@ class MainWindow(QWidget):
         if self.cam_index:
             cam.live_view(self.cam_number)
         else:
-            print("Žádná kamera nebyla vybrána.")
+            print("No camera selected")
 
     def refresh_gui(self):
         
