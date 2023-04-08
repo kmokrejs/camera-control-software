@@ -415,10 +415,14 @@ class CamControl:
 
         subprocess.run(cmd)
 
+    def take_picture_hdr(self, path=str, photo_name=str):
+
+        cmd = [ 'gphoto2', '--capture-image-and-download', '--filename', path+'/'+photo_name]
+
+        subprocess.run(cmd)
 #-------------------------------------------------------------------------------------
 
     def live_view(self, camera_num):
-        print(camera_num)
         cap = cv.VideoCapture(camera_num)
 
         # Check if the webcam is opened correctly

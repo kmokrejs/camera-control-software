@@ -1,11 +1,15 @@
 #%% GUI
 import sys
-from PyQt5.QtWidgets import QListWidget,  QListWidgetItem, QApplication, QLineEdit, QWidget, QVBoxLayout, QLabel, QGroupBox, QComboBox, QHBoxLayout, QPushButton, QFileDialog
+from PyQt5.QtWidgets import QListWidget, QDialog, QGridLayout, QListWidgetItem, QApplication, QLineEdit, QWidget, QVBoxLayout, QLabel, QGroupBox, QComboBox, QHBoxLayout, QPushButton, QFileDialog
 from PyQt5.QtCore import Qt, QTimer
+from PyQt5.QtGui import QPalette, QColor
 from PyQt5.QtGui import QPixmap, QIcon,QImage
 from os import listdir
 from os.path import isfile, join
-import cv2 as cv    
+import cv2 as cv   
+import datetime
+import numpy as np
+
 
 from cameraControl import CamControl
 
@@ -209,7 +213,14 @@ class MainWindow(QWidget):
         self.live_view_button = QPushButton('Start live view', self)
         self.live_view_button.clicked.connect(self.start_live_view)
         hbox_buttons.addWidget(self.live_view_button)
+
+        self.hdr_button = QPushButton('Take a HDR image', self)
+        self.hdr_button.clicked.connect(self.hdr_popup)
+        hbox_buttons.addWidget(self.hdr_button)
+
         group_layout3.addLayout(hbox_buttons)
+
+
 
         group_box3.setLayout(group_layout3)
         layout.addWidget(group_box3, alignment=Qt.AlignLeft | Qt.AlignTop)
@@ -237,6 +248,80 @@ class MainWindow(QWidget):
 
 #-------------------Functions--------------------------------
 
+    def hdr_popup(self):
+        self.popup = QDialog(self)
+        self.popup.setWindowTitle("HDR popup")
+        self.popup.setFixedSize(400, 180)
+
+        palette = self.popup.palette()
+        palette.setColor(QPalette.Window, QColor(181, 181, 181))
+        self.popup.setPalette(palette)
+
+        grid = QGridLayout()
+
+        self.shutterspeed_values = cam.get_shutterspeed_values(self.cam_index)
+        self.combo_boxes_hdr = [QComboBox(self.popup) for _ in range(3)]
+
+        exposure_times_label = QLabel("Select exposure times", self.popup)
+        grid.addWidget(exposure_times_label, 0, 0)
+
+        for i, combo_box_hdr in enumerate(self.combo_boxes_hdr):
+            for value in self.shutterspeed_values:
+                combo_box_hdr.addItem(value)
+            grid.addWidget(combo_box_hdr, i+1, 0)
+        
+        save_button = QPushButton("Take picture and process HDR", self.popup)
+        save_button.clicked.connect(self.save_and_shoot)
+        grid.addWidget(save_button, 4, 0)
+
+        self.popup.setLayout(grid)
+        self.popup.exec_()
+
+    def save_and_shoot(self):
+        if self.selected_folder:
+            self.date = datetime.datetime.now()
+            names = []
+            selected_values = [combo_box.currentText() for combo_box in self.combo_boxes_hdr]
+            values = []
+
+            for shutterspeed in selected_values:
+                cam.set_shutterspeed(self.cam_index, shutterspeed)
+                sh_sp = shutterspeed.replace("/",".")
+                sh_split = shutterspeed.split("/")
+                values.append(int(sh_split[0])/int(sh_split[1]))
+                name = "hdr_"+str(self.date.hour)+"_"+str(self.date.minute)+"/"+"hdr"+sh_sp
+                cam.take_picture_hdr(self.selected_folder, name)
+                names.append(self.selected_folder+"/"+name)
+            self.update_image_list()
+        else:
+            print("Žádná složka nebyla vybrána.")
+
+        print(values)
+        self.process_hdr(values,names)
+        self.popup.close()
+
+    def process_hdr(self, values, paths):
+        images = []
+        for filename in paths:
+            img = cv.imread(filename)
+            img = cv.cvtColor(img, cv.COLOR_BGR2RGB)
+            images.append(img)
+        
+        images = np.array(images)
+        times = np.array(values, dtype=np.float32)
+
+        calibrate = cv.createCalibrateDebevec()
+        response = calibrate.process(images, times)
+
+        merge = cv.createMergeDebevec()
+        hdr_image = merge.process(images, times, response)
+
+        tonemap = cv.createTonemap(2.2)
+        ldr = tonemap.process(hdr_image)
+        ldr = cv.cvtColor(ldr, cv.COLOR_RGB2BGR)
+
+        cv.imwrite(self.selected_folder+"/"+"hdr_"+str(self.date.hour)+"_"+str(self.date.minute)+".jpg", ldr * 255)
+
     def select_folder(self):
         options = QFileDialog.Options()
         options |= QFileDialog.ShowDirsOnly
@@ -257,7 +342,6 @@ class MainWindow(QWidget):
         
     def save_input_foto(self):
         self.foto_name = self.foto_name_line_edit.text()
-
 
 
     def cam_box_change(self, index):
