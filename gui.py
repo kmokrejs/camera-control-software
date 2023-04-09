@@ -23,6 +23,8 @@ class MainWindow(QWidget):
 
         self.cam_index = ''
         self.cam_number = 0
+        self.selected_folder = ""
+        self.foto_name = ""
         self.init_ui()
 
     def init_ui(self):
@@ -204,7 +206,7 @@ class MainWindow(QWidget):
         hbox_foto_name.addWidget(save_button)
         group_layout3.addLayout(hbox_foto_name)
 
-        # Buttons "foto" and "Start live view"
+        # Buttons "foto", "Start live view", "HDR image". Continuous
         hbox_buttons = QHBoxLayout()
         self.print_folder_button = QPushButton("Foto", self)
         self.print_folder_button.clicked.connect(self.take_picture)
@@ -217,6 +219,10 @@ class MainWindow(QWidget):
         self.hdr_button = QPushButton('Take a HDR image', self)
         self.hdr_button.clicked.connect(self.hdr_popup)
         hbox_buttons.addWidget(self.hdr_button)
+
+        self.cont_button = QPushButton('Serial imaging', self)
+        self.cont_button.clicked.connect(self.cont_imaging)
+        hbox_buttons.addWidget(self.cont_button)
 
         group_layout3.addLayout(hbox_buttons)
 
@@ -248,6 +254,17 @@ class MainWindow(QWidget):
 
 #-------------------Functions--------------------------------
 
+    def cont_imaging(self):
+        if self.selected_folder != "" and self.foto_name != "":
+                cam.take_picture(self.selected_folder, self.foto_name)
+                cam.take_picture(self.selected_folder, self.foto_name)
+                cam.take_picture(self.selected_folder, self.foto_name)
+                self.update_image_list()
+        else:
+            print("No folder or foto name selected.")
+            
+
+
     def hdr_popup(self):
         self.popup = QDialog(self)
         self.popup.setWindowTitle("HDR popup")
@@ -278,27 +295,37 @@ class MainWindow(QWidget):
         self.popup.exec_()
 
     def save_and_shoot(self):
-        if self.selected_folder:
+        if self.selected_folder != "":
             self.date = datetime.datetime.now()
             names = []
             selected_values = [combo_box.currentText() for combo_box in self.combo_boxes_hdr]
             values = []
-
-            for shutterspeed in selected_values:
-                cam.set_shutterspeed(self.cam_index, shutterspeed)
-                sh_sp = shutterspeed.replace("/",".")
-                sh_split = shutterspeed.split("/")
-                values.append(int(sh_split[0])/int(sh_split[1]))
-                name = "hdr_"+str(self.date.hour)+"_"+str(self.date.minute)+"/"+"hdr"+sh_sp
-                cam.take_picture_hdr(self.selected_folder, name)
-                names.append(self.selected_folder+"/"+name)
-            self.update_image_list()
+            
+            try:
+                if selected_values[0] and selected_values[1] != "auto":
+                    if selected_values[0] != selected_values[1]:
+                        if selected_values[0] != selected_values[2]:
+                            if selected_values[1] != selected_values[2]:
+                                for shutterspeed in selected_values:
+                                    cam.set_shutterspeed(self.cam_index, shutterspeed)
+                                    sh_sp = shutterspeed.replace("/",".")
+                                    sh_split = shutterspeed.split("/")
+                                    values.append(int(sh_split[0])/int(sh_split[1]))
+                                    name = "hdr_"+str(self.date.hour)+"_"+str(self.date.minute)+"/"+"hdr"+sh_sp
+                                    cam.take_picture_hdr(self.selected_folder, name)
+                                    names.append(self.selected_folder+"/"+name)
+                                self.update_image_list()
+                    
+            except:
+                return print("Selected mode does not support shutterspeed value change or selected shutterspeed values are same! Change mode!")
         else:
-            print("Žádná složka nebyla vybrána.")
+            print("No folder selected.")
 
-        print(values)
-        self.process_hdr(values,names)
-        self.popup.close()
+        try:
+            self.process_hdr(values,names)
+            self.popup.close()
+        except:
+            print("Selected  shutterspeed values are same!")
 
     def process_hdr(self, values, paths):
         images = []
@@ -333,12 +360,12 @@ class MainWindow(QWidget):
             self.update_image_list()
 
     def take_picture(self):
-        if self.selected_folder:
+        if self.selected_folder != "" and self.foto_name != "":
             cam.take_picture(self.selected_folder, self.foto_name)
             self.update_image_list()
             
         else:
-            print("Žádná složka nebyla vybrána.")
+            print("No folder or foto name selected.")
         
     def save_input_foto(self):
         self.foto_name = self.foto_name_line_edit.text()
