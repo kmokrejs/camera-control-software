@@ -276,7 +276,9 @@ class MainWindow(QWidget):
 
         grid = QGridLayout()
 
-        self.shutterspeed_values = cam.get_shutterspeed_values(self.cam_index)
+        
+        self.shutterspeed_values = cam.get_settings(self.cam_index, 'shutterspeed')
+
         self.combo_boxes_hdr = [QComboBox(self.popup) for _ in range(3)]
 
         exposure_times_label = QLabel("Select exposure times", self.popup)
@@ -307,7 +309,7 @@ class MainWindow(QWidget):
                         if selected_values[0] != selected_values[2]:
                             if selected_values[1] != selected_values[2]:
                                 for shutterspeed in selected_values:
-                                    cam.set_shutterspeed(self.cam_index, shutterspeed)
+                                    cam.set_settings(self.cam_index, settings='shutterspeed', settings_value=shutterspeed)
                                     sh_sp = shutterspeed.replace("/",".")
                                     sh_split = shutterspeed.split("/")
                                     values.append(int(sh_split[0])/int(sh_split[1]))
@@ -404,56 +406,56 @@ class MainWindow(QWidget):
 
     def iso_val_change(self, index):
         try:
-            vals = cam.get_iso_values(self.cam_index)
-            cam.set_iso(self.cam_index, vals[index])
+            vals = cam.get_settings(self.cam_index, settings='iso')
+            cam.set_settings(self.cam_index, settings='iso', settings_value=vals[index])
         except:
             return
         
     def modes_val_change(self, index):
         try:
-            vals = cam.get_modes(self.cam_index)
-            cam.set_mode(self.cam_index, vals[index])
+            vals = cam.get_settings(self.cam_index, settings='autoexposuremode')
+            cam.set_settings(self.cam_index, settings='autoexposuremode', settings_value=vals[index])
 
             self.update_iso_vals(self.get_iso())
-            iso_def = cam.current_iso_value(self.cam_index)
+            iso_def = cam.current_settings(self.cam_index, settings='autoexposuremode')
             for i in range(0,len(self.iso_vals)):
                 if self.iso_vals[i] == iso_def:
                     self.combo_box2.setCurrentIndex(i)
             
             self.update_whitebal_vals(self.get_whitebal())
-            wb_def = cam.current_whitebalance_value(self.cam_index)
+            wb_def = cam.current_settings(self.cam_index, settings='whitebalance')
             for i in range(0,len(self.whitebal_vals)):
                 if self.whitebal_vals[i] == wb_def:
                     self.combo_box4.setCurrentIndex(i)
 
             
             self.update_aper_vals(self.get_aper())
-            ap_def = cam.current_aperture_value(self.cam_index)
+            ap_def = cam.current_settings(self.cam_index, settings='aperture')
             for i in range(0,len(self.aper_vals)):
                 if self.aper_vals[i] == ap_def:
                     self.combo_box5.setCurrentIndex(i)
             
             self.update_shutter_vals(self.get_shutter())
-            sh_def = cam.current_shutterspeed_value(self.cam_index)
+            sh_def = cam.current_settings(self.cam_index, settings='shutterspeed')
             for i in range(0,len(self.shut_vals)):
                 if self.shut_vals[i] == sh_def:
                     self.combo_box6.setCurrentIndex(i)
             
             self.update_imgform_vals(self.get_imgform())
-            imgf_def = cam.current_image_format(self.cam_index)
+            imgf_def = cam.current_settings(self.cam_index, settings='imageformat')
             for i in range(0,len(self.imf_vals)):
                 if self.imf_vals[i] == imgf_def:
                     self.combo_box7.setCurrentIndex(i)
             
             
             self.update_focus_vals(self.get_focusm())
-            focm_def = cam.current_focusmode(self.cam_index)
+            focm_def = cam.current_settings(self.cam_index, settings='focusmode')
             for i in range(0,len(self.focm_vals)):
                 if self.focm_vals[i] == focm_def:
                     self.combo_box8.setCurrentIndex(i)
             
             self.update_drive_vals(self.get_drivem())
-            drivm_def = cam.current_focusmode(self.cam_index)
+            drivm_def = cam.current_settings(self.cam_index, settings='drivemode')
             for i in range(0,len(self.drivm_vals)):
                 if self.drivm_vals[i] == drivm_def:
                     self.combo_box9.setCurrentIndex(i)
@@ -463,16 +465,16 @@ class MainWindow(QWidget):
 
     def whitebal_val_change(self, index):
         try:
-            vals = cam.get_whitebalance_values(self.cam_index)
-            cam.set_whitebalance(self.cam_index, vals[index])
+            vals = cam.get_settings(self.cam_index, settings='whitebalance')
+            cam.set_settings(self.cam_index, settings='whitebalance', settings_value=vals[index])
         except:
             return
     
     def aper_val_change(self, index):
         try:
-            vals = cam.get_aperture_values(self.cam_index)
+            vals = cam.get_settings(self.cam_index, settings='aperture')
             if len(vals) > 1:
-                cam.set_aperture(self.cam_index, vals[index])
+                cam.set_settings(self.cam_index, settings='aperture', settings_value=vals[index])
             
             return
         except:
@@ -480,9 +482,9 @@ class MainWindow(QWidget):
         
     def shut_val_change(self, index):
         try:
-            vals = cam.get_shutterspeed_values(self.cam_index)
+            vals = cam.get_settings(self.cam_index, settings='shutterspeed')
             
-            cam.set_shutterspeed(self.cam_index, vals[index])
+            cam.set_settings(self.cam_index, settings='shutterspeed', settings_value=vals[index])
             
             return
         except:
@@ -490,9 +492,9 @@ class MainWindow(QWidget):
     
     def imgf_val_change(self, index):
         try:
-            vals = cam.get_image_format(self.cam_index)
+            vals = cam.get_settings(self.cam_index, settings='imageformat')
             
-            cam.set_image_format(self.cam_index, vals[index])
+            cam.set_settings(self.cam_index, settings='imageformat', settings_value=vals[index])
             
             return
         except:
@@ -500,9 +502,9 @@ class MainWindow(QWidget):
 
     def focm_val_change(self, index):
         try:
-            vals = cam.get_focusmode(self.cam_index)
+            vals = cam.get_settings(self.cam_index, settings='focusmode')
             
-            cam.set_focusmode(self.cam_index, vals[index])
+            cam.set_settings(self.cam_index, settings='focusmode', settings_value=vals[index])
             
             return
         except:
@@ -510,9 +512,9 @@ class MainWindow(QWidget):
 
     def drivem_val_change(self, index):
         try:
-            vals = cam.get_drivemode(self.cam_index)
+            vals = cam.get_settings(self.cam_index, settings='drivemode')
             
-            cam.set_drivemode(self.cam_index, vals[index])
+            cam.set_settings(self.cam_index, settings='drivemode', settings_value=vals[index])
             
             return
         except:
@@ -548,7 +550,7 @@ class MainWindow(QWidget):
             for option in options:
                 combo_box.addItem(option)
                 
-            default_value = cam.current_iso_value(self.cam_index)
+            default_value = cam.current_settings(self.cam_index, settings='iso')
             for i in range(0,len(self.iso_vals)):
                 if self.iso_vals[i] == default_value:
                     combo_box.setCurrentIndex(i)
@@ -573,7 +575,7 @@ class MainWindow(QWidget):
             for option in options:
                 combo_box.addItem(option)
                 
-            default_value = cam.current_mode(self.cam_index)
+            default_value = cam.current_settings(self.cam_index, settings='autoexposuremode')
             for i in range(0,len(self.modes_vals)):
                 if self.modes_vals[i] == default_value:
                     combo_box.setCurrentIndex(i)
@@ -599,7 +601,7 @@ class MainWindow(QWidget):
             for option in options:
                 combo_box.addItem(option)
                 
-            default_value = cam.current_whitebalance_value(self.cam_index)
+            default_value = cam.current_settings(self.cam_index, settings='whitebalance')
             for i in range(0,len(self.whitebal_vals)):
                 if self.whitebal_vals[i] == default_value:
                     combo_box.setCurrentIndex(i)
@@ -624,7 +626,7 @@ class MainWindow(QWidget):
             for option in options:
                 combo_box.addItem(option)
                 
-            default_value = cam.current_aperture_value(self.cam_index)
+            default_value = cam.current_settings(self.cam_index, settings='aperture')
             for i in range(0,len(self.whitebal_vals)):
                 if self.whitebal_vals[i] == default_value:
                     combo_box.setCurrentIndex(i)
@@ -649,7 +651,7 @@ class MainWindow(QWidget):
             for option in options:
                 combo_box.addItem(option)
                 
-            default_value = cam.current_shutterspeed_value(self.cam_index)
+            default_value = cam.current_settings(self.cam_index, settings='shutterspeed')
             for i in range(0,len(self.shut_vals)):
                 if self.shut_vals[i] == default_value:
                     combo_box.setCurrentIndex(i)
@@ -674,7 +676,7 @@ class MainWindow(QWidget):
             for option in options:
                 combo_box.addItem(option)
                 
-            default_value = cam.current_image_format(self.cam_index)
+            default_value = cam.current_settings(self.cam_index, settings='imageformat')
             for i in range(0,len(self.imf_vals)):
                 if self.imf_vals[i] == default_value:
                     combo_box.setCurrentIndex(i)
@@ -699,7 +701,7 @@ class MainWindow(QWidget):
             for option in options:
                 combo_box.addItem(option)
                 
-            default_value = cam.current_focusmode(self.cam_index)
+            default_value = cam.current_settings(self.cam_index, settings='focusmode')
             for i in range(0,len(self.focm_vals)):
                 if self.focm_vals[i] == default_value:
                     combo_box.setCurrentIndex(i)
@@ -724,7 +726,7 @@ class MainWindow(QWidget):
                 for option in options:
                     combo_box.addItem(option)
                     
-                default_value = cam.current_drivemode(self.cam_index)
+                default_value = cam.current_settings(self.cam_index, settings='drivemode')
                 for i in range(0,len(self.drivm_vals)):
                     if self.drivm_vals[i] == default_value:
                         combo_box.setCurrentIndex(i)
@@ -746,14 +748,14 @@ class MainWindow(QWidget):
         
     def get_iso(self):
         if self.cam_index == '':
-           vals = ['No camera connected']
+           vals = ['No values']
         else:
             try:
-                vals = cam.get_iso_values(self.cam_index)
+                vals = cam.get_settings(self.cam_index, settings='iso')
                 self.iso_vals = vals
                 return vals
             except:
-                vals = ['No camera connected']
+                vals = ['No values']
                 return vals
 
         return vals     
@@ -761,38 +763,38 @@ class MainWindow(QWidget):
     def get_mods(self):
         cams, ports = cam.detect_camera()
         if not cams:
-           vals = ['No camera connected']
+           vals = ['No values']
         else:
             try:
-                vals = cam.get_modes(self.cam_index)
+                vals = cam.get_settings(self.cam_index, settings='autoexposuremode')
                 self.modes_vals = vals
                 return vals
             except:
-                vals = ['No camera connected']
+                vals = ['No values']
                 return vals
 
         return vals 
 
     def get_whitebal(self):
         if self.cam_index == '':
-           vals = ['No camera connected']
+           vals = ['No values']
         else:
             try:
-                vals = cam.get_whitebalance_values(self.cam_index)
+                vals = cam.get_settings(self.cam_index, settings='whitebalance')
                 self.whitebal_vals = vals
                 return vals
             except:
-                vals = ['No camera connected']
+                vals = ['No values']
                 return vals
 
         return vals
 
     def get_aper(self):
         if self.cam_index == '':
-           vals = ['No camera connected']
+           vals = ['No values']
         else:
             try:
-                vals = cam.get_aperture_values(self.cam_index)
+                vals = cam.get_settings(self.cam_index, settings='aperture')
                 if len(vals) > 1:
                     self.aper_vals = vals
                 else:
@@ -800,63 +802,63 @@ class MainWindow(QWidget):
 
                 return vals
             except:
-                vals = ['No camera connected']
+                vals = ['No values']
                 return vals
 
         return vals
 
     def get_shutter(self):
         if self.cam_index == '':
-           vals = ['No camera connected']
+           vals = ['No values']
         else:
             try:
-                vals = cam.get_shutterspeed_values(self.cam_index)
+                vals = cam.get_settings(self.cam_index, settings='shutterspeed')
                 self.shut_vals = vals
                 return vals
             except:
-                vals = ['No camera connected']
+                vals = ['No values']
                 return vals
 
         return vals
     
     def get_imgform(self):
         if self.cam_index == '':
-           vals = ['No camera connected']
+           vals = ['No values']
         else:
             try:
-                vals = cam.get_image_format(self.cam_index)
+                vals = cam.get_settings(self.cam_index, settings='imageformat')
                 self.imf_vals = vals
                 return vals
             except:
-                vals = ['No camera connected']
+                vals = ['No values']
                 return vals
 
         return vals
     
     def get_focusm(self):
         if self.cam_index == '':
-           vals = ['No camera connected']
+           vals = ['No values']
         else:
             try:
-                vals = cam.get_focusmode(self.cam_index)
+                vals = cam.get_settings(self.cam_index, settings='focusmode')
                 self.focm_vals = vals
                 return vals
             except:
-                vals = ['No camera connected']
+                vals = ['No values']
                 return vals
 
         return vals
 
     def get_drivem(self):
             if self.cam_index == '':
-                vals = ['No camera connected']
+                vals = ['No values']
             else:
                 try:
-                    vals = cam.get_drivemode(self.cam_index)
+                    vals = cam.get_settings(self.cam_index, settings='drivemode')
                     self.drivm_vals = vals
                     return vals
                 except:
-                    vals = ['No camera connected']
+                    vals = ['No values']
                     return vals
 
             return vals
