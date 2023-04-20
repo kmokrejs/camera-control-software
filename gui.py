@@ -16,7 +16,6 @@ from cameraControl import CamControl
 cam = CamControl()
 
 
-
 class MainWindow(QWidget):
     def __init__(self):
         super().__init__()
@@ -417,7 +416,7 @@ class MainWindow(QWidget):
             cam.set_settings(self.cam_index, settings='autoexposuremode', settings_value=vals[index])
 
             self.update_iso_vals(self.get_iso())
-            iso_def = cam.current_settings(self.cam_index, settings='autoexposuremode')
+            iso_def = cam.current_settings(self.cam_index, settings='iso')
             for i in range(0,len(self.iso_vals)):
                 if self.iso_vals[i] == iso_def:
                     self.combo_box2.setCurrentIndex(i)
