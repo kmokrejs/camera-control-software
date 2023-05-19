@@ -1,4 +1,6 @@
-#%% GUI
+# GUI
+# This script uses PyQt5 to create a GUI for controlling a DSLR camera via gphoto2.
+
 import sys
 from PyQt5.QtWidgets import QListWidget, QDialog, QGridLayout, QListWidgetItem, QApplication, QLineEdit, QWidget, QVBoxLayout, QLabel, QGroupBox, QComboBox, QHBoxLayout, QPushButton, QFileDialog
 from PyQt5.QtCore import Qt, QTimer
@@ -9,13 +11,12 @@ from os.path import isfile, join
 import cv2 as cv   
 import datetime
 import numpy as np
-
-
 from cameraControl import CamControl
 
+# Create an instance of the CamControl class, which handles communication with the camera.
 cam = CamControl()
 
-
+# This class represents the main window of the application.
 class MainWindow(QWidget):
     def __init__(self):
         super().__init__()
@@ -25,30 +26,28 @@ class MainWindow(QWidget):
         self.selected_folder = ""
         self.foto_name = ""
         self.init_ui()
-
+        
+    # This function initializes the user interface of the main window.
+    # It creates and configures the widgets that will be displayed in the window.
     def init_ui(self):
         layout = QVBoxLayout()
-
         hbox_top = QHBoxLayout()
 
-
-
         # Box 1
+        # This section of the function creates and configures the first group box, which contains controls for camera selection and folder selection.
         group_box = QGroupBox()
         group_box.setFixedSize(330, 240)
-
         group_layout = QVBoxLayout()
 
-        # Kamery
+        # Cams
         hbox = QHBoxLayout()
-
         label = QLabel('Cams:')
         hbox.addWidget(label)
 
         self.combo_box1 = self.create_combo_box_cameras(self.get_cams())
         hbox.addWidget(self.combo_box1)
 
-        #button pro obnovení
+        #button for refreshing
         self.refresh_button = QPushButton("↻", self)
         self.refresh_button.clicked.connect(self.refresh_gui)
         self.refresh_button.setFixedWidth(40)
@@ -70,84 +69,69 @@ class MainWindow(QWidget):
         # Images in folder
         group_box3 = QGroupBox("Folder content:")
         group_box3.setFixedSize(300, 100)  
-
         group_layout3 = QVBoxLayout()
 
         self.image_list = QListWidget()
         group_layout3.addWidget(self.image_list)
-
         group_box3.setLayout(group_layout3)
         group_layout.addWidget(group_box3)
 
         group_box.setLayout(group_layout)
         hbox_top.addWidget(group_box, 0, alignment=Qt.AlignLeft | Qt.AlignTop)
 
-
-
         # Box 2
+        # This section of the function creates and configures the second group box, which contains controls for setting the camera's modes, ISO, white balance, aperture, and shutter speed.
         group_box2 = QGroupBox()
         group_box2.setFixedSize(330, 240)
-
         group_layout2 = QVBoxLayout()
 
         #modes
         hbox_modes = QHBoxLayout()
-
         modeslabel = QLabel('Modes:')
         hbox_modes.addWidget(modeslabel)
 
         self.combo_box3 = self.create_combo_box_modes(self.get_mods())
         hbox_modes.addWidget(self.combo_box3)
-
         group_layout2.addLayout(hbox_modes)
 
         #ISO
         hbox_iso = QHBoxLayout()
-
         isolabel = QLabel('ISO:')
         hbox_iso.addWidget(isolabel)
 
         self.combo_box2 = self.create_combo_box_iso(self.get_iso())
         hbox_iso.addWidget(self.combo_box2)
-
         group_layout2.addLayout(hbox_iso)
 
         #Whitebalance
         hbox_whitebal = QHBoxLayout()
-
         whiteballabel = QLabel('Whitebalance:')
         hbox_whitebal.addWidget(whiteballabel)
 
         self.combo_box4 = self.create_combo_box_whitebal(self.get_whitebal())
         hbox_whitebal.addWidget(self.combo_box4)
-
         group_layout2.addLayout(hbox_whitebal)
         
         #aperture
         hbox_aper = QHBoxLayout()
-
         aperlabel = QLabel('Aperture:')
         hbox_aper.addWidget(aperlabel)
 
         self.combo_box5 = self.create_combo_box_aper(self.get_aper())
         hbox_aper.addWidget(self.combo_box5)
-
         group_layout2.addLayout(hbox_aper)
 
         #shutterspeed
         hbox_shut = QHBoxLayout()
-
         shutlabel = QLabel('Shutterspeed:')
         hbox_shut.addWidget(shutlabel)
 
         self.combo_box6 = self.create_combo_box_shut(self.get_shutter())
         hbox_shut.addWidget(self.combo_box6)
-
         group_layout2.addLayout(hbox_shut)
 
         #imageformat
         hbox_imf = QHBoxLayout()
-
         imflabel = QLabel('Image format:')
         hbox_imf.addWidget(imflabel)
 
@@ -158,41 +142,36 @@ class MainWindow(QWidget):
         
         #focusmode
         hbox_focm = QHBoxLayout()
-
         focmlabel = QLabel('Focus mode:')
         hbox_focm.addWidget(focmlabel)
 
         self.combo_box8 = self.create_combo_box_focm(self.get_focusm())
         hbox_focm.addWidget(self.combo_box8)
-
         group_layout2.addLayout(hbox_focm)
 
         #drivemode
         hbox_drivm = QHBoxLayout()
-
         drivmlabel = QLabel('Drive mode:')
         hbox_drivm.addWidget(drivmlabel)
 
         self.combo_box9 = self.create_combo_box_drivm(self.get_drivem())
         hbox_drivm.addWidget(self.combo_box9)
-
         group_layout2.addLayout(hbox_drivm)
 
-        #------
+        
         group_box2.setLayout(group_layout2)
         hbox_top.addWidget(group_box2, 1    , alignment=Qt.AlignLeft | Qt.AlignTop) 
-
         layout.addLayout(hbox_top)
 
 
 
         # Box 3
+        # This section of the function creates and configures the third group box, which contains namiing and acquisition functions with live view. 
         group_box3 = QGroupBox()
         group_box3.setFixedSize(660, 140)
-
         group_layout3 = QVBoxLayout()     
         
-        # Foto name
+        # Foto name and Save button
         hbox_foto_name = QHBoxLayout()
         foto_name_label = QLabel("Foto name:")
         hbox_foto_name.addWidget(foto_name_label)
@@ -205,8 +184,9 @@ class MainWindow(QWidget):
         hbox_foto_name.addWidget(save_button)
         group_layout3.addLayout(hbox_foto_name)
 
-        # Buttons "foto", "Start live view", "HDR image". Continuous
+        # Buttons "foto", "Start live view", "HDR image". "Serial imaging"
         hbox_buttons = QHBoxLayout()
+        
         self.print_folder_button = QPushButton("Foto", self)
         self.print_folder_button.clicked.connect(self.take_picture)
         hbox_buttons.addWidget(self.print_folder_button)
@@ -224,16 +204,11 @@ class MainWindow(QWidget):
         hbox_buttons.addWidget(self.cont_button)
 
         group_layout3.addLayout(hbox_buttons)
-
-
-
         group_box3.setLayout(group_layout3)
         layout.addWidget(group_box3, alignment=Qt.AlignLeft | Qt.AlignTop)
 
         
-
-
-        # functions to run after combo box change
+        # functions to run after each of combo box changes
         self.combo_box1.currentIndexChanged.connect(self.cam_box_change)
         self.combo_box2.currentIndexChanged.connect(self.iso_val_change)
         self.combo_box3.currentIndexChanged.connect(self.modes_val_change)
@@ -244,15 +219,13 @@ class MainWindow(QWidget):
         self.combo_box8.currentIndexChanged.connect(self.focm_val_change)
         self.combo_box9.currentIndexChanged.connect(self.drivem_val_change)
 
-
         self.setLayout(layout)
-
         self.setWindowTitle('Camera Control')
-        #self.setFixedSize(600, 600)  
         self.show()
 
-#-------------------Functions--------------------------------
+    # Section with defined functions that ensures funtionality.
 
+    
     def cont_imaging(self):
         if self.selected_folder != "" and self.foto_name != "":
                 cam.take_picture(self.selected_folder, self.foto_name)
@@ -262,8 +235,7 @@ class MainWindow(QWidget):
         else:
             print("No folder or foto name selected.")
             
-
-
+            
     def hdr_popup(self):
         self.popup = QDialog(self)
         self.popup.setWindowTitle("HDR popup")
@@ -272,12 +244,9 @@ class MainWindow(QWidget):
         palette = self.popup.palette()
         palette.setColor(QPalette.Window, QColor(181, 181, 181))
         self.popup.setPalette(palette)
-
         grid = QGridLayout()
-
-        
+       
         self.shutterspeed_values = cam.get_settings(self.cam_index, 'shutterspeed')
-
         self.combo_boxes_hdr = [QComboBox(self.popup) for _ in range(3)]
 
         exposure_times_label = QLabel("Select exposure times", self.popup)
@@ -295,6 +264,7 @@ class MainWindow(QWidget):
         self.popup.setLayout(grid)
         self.popup.exec_()
 
+        
     def save_and_shoot(self):
         if self.selected_folder != "":
             self.date = datetime.datetime.now()
@@ -316,7 +286,6 @@ class MainWindow(QWidget):
                                     cam.take_picture_hdr(self.selected_folder, name)
                                     names.append(self.selected_folder+"/"+name)
                                 self.update_image_list()
-                    
             except:
                 return print("Selected mode does not support shutterspeed value change or selected shutterspeed values are same! Change mode!")
         else:
@@ -328,6 +297,7 @@ class MainWindow(QWidget):
         except:
             print("Selected  shutterspeed values are same!")
 
+            
     def process_hdr(self, values, paths):
         images = []
         for filename in paths:
@@ -350,6 +320,7 @@ class MainWindow(QWidget):
 
         cv.imwrite(self.selected_folder+"/"+"hdr_"+str(self.date.hour)+"_"+str(self.date.minute)+".jpg", ldr * 255)
 
+        
     def select_folder(self):
         options = QFileDialog.Options()
         options |= QFileDialog.ShowDirsOnly
@@ -360,6 +331,7 @@ class MainWindow(QWidget):
             self.browse.setText("Path: " + folder)
             self.update_image_list()
 
+            
     def take_picture(self):
         if self.selected_folder != "" and self.foto_name != "":
             cam.take_picture(self.selected_folder, self.foto_name)
@@ -367,6 +339,7 @@ class MainWindow(QWidget):
             
         else:
             print("No folder or foto name selected.")
+        
         
     def save_input_foto(self):
         self.foto_name = self.foto_name_line_edit.text()
@@ -379,7 +352,6 @@ class MainWindow(QWidget):
         else:
             self.cam_index = ports[index]
             self.cam_number = index
-        
         try:
             iso_vals = self.get_iso()
             self.update_iso_vals(iso_vals)
@@ -397,18 +369,19 @@ class MainWindow(QWidget):
             self.update_focus_vals(focm_vals)
             drivm_vals = self.get_drivem()
             self.update_drive_vals(drivm_vals)
-
-
+            
             return ports[index]
         except:
             return 
 
+        
     def iso_val_change(self, index):
         try:
             vals = cam.get_settings(self.cam_index, settings='iso')
             cam.set_settings(self.cam_index, settings='iso', settings_value=vals[index])
         except:
             return
+        
         
     def modes_val_change(self, index):
         try:
@@ -462,12 +435,14 @@ class MainWindow(QWidget):
         except:
             return
 
+        
     def whitebal_val_change(self, index):
         try:
             vals = cam.get_settings(self.cam_index, settings='whitebalance')
             cam.set_settings(self.cam_index, settings='whitebalance', settings_value=vals[index])
         except:
             return
+    
     
     def aper_val_change(self, index):
         try:
@@ -479,6 +454,7 @@ class MainWindow(QWidget):
         except:
             return
         
+        
     def shut_val_change(self, index):
         try:
             vals = cam.get_settings(self.cam_index, settings='shutterspeed')
@@ -488,6 +464,7 @@ class MainWindow(QWidget):
             return
         except:
             return
+    
     
     def imgf_val_change(self, index):
         try:
@@ -499,6 +476,7 @@ class MainWindow(QWidget):
         except:
             return
 
+        
     def focm_val_change(self, index):
         try:
             vals = cam.get_settings(self.cam_index, settings='focusmode')
@@ -509,6 +487,7 @@ class MainWindow(QWidget):
         except:
             return
 
+        
     def drivem_val_change(self, index):
         try:
             vals = cam.get_settings(self.cam_index, settings='drivemode')
@@ -531,8 +510,8 @@ class MainWindow(QWidget):
 
         return combo_box
           
-    def create_combo_box_iso(self, options):
         
+    def create_combo_box_iso(self, options):
         if self.cam_index == '':
             combo_box = QComboBox()
             for option in options:
@@ -543,7 +522,6 @@ class MainWindow(QWidget):
                 combo_box.setCurrentIndex(index)
 
             return combo_box
-        
         else:
             combo_box = QComboBox()
             for option in options:
@@ -553,8 +531,8 @@ class MainWindow(QWidget):
             for i in range(0,len(self.iso_vals)):
                 if self.iso_vals[i] == default_value:
                     combo_box.setCurrentIndex(i)
-                                
             return combo_box
+        
         
     def create_combo_box_modes(self, options):
         cams, ports = cam.detect_camera()
@@ -566,9 +544,7 @@ class MainWindow(QWidget):
                 default_value = options[0]
                 index = combo_box.findText(default_value)
                 combo_box.setCurrentIndex(index)
-
             return combo_box
-        
         else:
             combo_box = QComboBox()
             for option in options:
@@ -578,28 +554,23 @@ class MainWindow(QWidget):
             for i in range(0,len(self.modes_vals)):
                 if self.modes_vals[i] == default_value:
                     combo_box.setCurrentIndex(i)
-
-            
             return combo_box
     
+    
     def create_combo_box_whitebal(self, options):
-        
         if self.cam_index == '':
             combo_box = QComboBox()
             for option in options:
                 combo_box.addItem(option)
-
                 default_value = options[0]
                 index = combo_box.findText(default_value)
                 combo_box.setCurrentIndex(index)
-
             return combo_box
         
         else:
             combo_box = QComboBox()
             for option in options:
                 combo_box.addItem(option)
-                
             default_value = cam.current_settings(self.cam_index, settings='whitebalance')
             for i in range(0,len(self.whitebal_vals)):
                 if self.whitebal_vals[i] == default_value:
@@ -607,17 +578,15 @@ class MainWindow(QWidget):
                     
             return combo_box
         
-    def create_combo_box_aper(self, options):
         
+    def create_combo_box_aper(self, options):
         if self.cam_index == '':
             combo_box = QComboBox()
             for option in options:
                 combo_box.addItem(option)
-
                 default_value = options[0]
                 index = combo_box.findText(default_value)
                 combo_box.setCurrentIndex(index)
-
             return combo_box
         
         else:
@@ -629,22 +598,18 @@ class MainWindow(QWidget):
             for i in range(0,len(self.whitebal_vals)):
                 if self.whitebal_vals[i] == default_value:
                     combo_box.setCurrentIndex(i)
-                    
             return combo_box
 
-    def create_combo_box_shut(self, options):
         
+    def create_combo_box_shut(self, options):
         if self.cam_index == '':
             combo_box = QComboBox()
             for option in options:
                 combo_box.addItem(option)
-
                 default_value = options[0]
                 index = combo_box.findText(default_value)
                 combo_box.setCurrentIndex(index)
-
             return combo_box
-        
         else:
             combo_box = QComboBox()
             for option in options:
@@ -654,22 +619,18 @@ class MainWindow(QWidget):
             for i in range(0,len(self.shut_vals)):
                 if self.shut_vals[i] == default_value:
                     combo_box.setCurrentIndex(i)
-                    
             return combo_box
         
-    def create_combo_box_imf(self, options):
         
+    def create_combo_box_imf(self, options):
         if self.cam_index == '':
             combo_box = QComboBox()
             for option in options:
                 combo_box.addItem(option)
-
                 default_value = options[0]
                 index = combo_box.findText(default_value)
                 combo_box.setCurrentIndex(index)
-
             return combo_box
-        
         else:
             combo_box = QComboBox()
             for option in options:
@@ -679,22 +640,19 @@ class MainWindow(QWidget):
             for i in range(0,len(self.imf_vals)):
                 if self.imf_vals[i] == default_value:
                     combo_box.setCurrentIndex(i)
-                    
             return combo_box
 
-    def create_combo_box_focm(self, options):
         
+    def create_combo_box_focm(self, options):
         if self.cam_index == '':
             combo_box = QComboBox()
             for option in options:
                 combo_box.addItem(option)
-
                 default_value = options[0]
                 index = combo_box.findText(default_value)
                 combo_box.setCurrentIndex(index)
 
             return combo_box
-        
         else:
             combo_box = QComboBox()
             for option in options:
@@ -704,22 +662,19 @@ class MainWindow(QWidget):
             for i in range(0,len(self.focm_vals)):
                 if self.focm_vals[i] == default_value:
                     combo_box.setCurrentIndex(i)
-                    
             return combo_box
 
+        
     def create_combo_box_drivm(self, options):
-            
             if self.cam_index == '':
                 combo_box = QComboBox()
                 for option in options:
                     combo_box.addItem(option)
-
                     default_value = options[0]
                     index = combo_box.findText(default_value)
                     combo_box.setCurrentIndex(index)
 
                 return combo_box
-            
             else:
                 combo_box = QComboBox()
                 for option in options:
@@ -729,9 +684,7 @@ class MainWindow(QWidget):
                 for i in range(0,len(self.drivm_vals)):
                     if self.drivm_vals[i] == default_value:
                         combo_box.setCurrentIndex(i)
-                        
                 return combo_box
-
 
 
     def get_cams(self):
@@ -744,6 +697,7 @@ class MainWindow(QWidget):
             return cams
         except ValueError as error:
             return [str(error)]
+        
         
     def get_iso(self):
         if self.cam_index == '':
@@ -759,6 +713,7 @@ class MainWindow(QWidget):
 
         return vals     
 
+    
     def get_mods(self):
         cams, ports = cam.detect_camera()
         if not cams:
@@ -774,6 +729,7 @@ class MainWindow(QWidget):
 
         return vals 
 
+    
     def get_whitebal(self):
         if self.cam_index == '':
            vals = ['No values']
@@ -788,6 +744,7 @@ class MainWindow(QWidget):
 
         return vals
 
+    
     def get_aper(self):
         if self.cam_index == '':
            vals = ['No values']
@@ -798,7 +755,6 @@ class MainWindow(QWidget):
                     self.aper_vals = vals
                 else:
                     vals = ["Auto"]
-
                 return vals
             except:
                 vals = ['No values']
@@ -806,6 +762,7 @@ class MainWindow(QWidget):
 
         return vals
 
+    
     def get_shutter(self):
         if self.cam_index == '':
            vals = ['No values']
@@ -819,6 +776,7 @@ class MainWindow(QWidget):
                 return vals
 
         return vals
+    
     
     def get_imgform(self):
         if self.cam_index == '':
@@ -834,6 +792,7 @@ class MainWindow(QWidget):
 
         return vals
     
+    
     def get_focusm(self):
         if self.cam_index == '':
            vals = ['No values']
@@ -848,6 +807,7 @@ class MainWindow(QWidget):
 
         return vals
 
+    
     def get_drivem(self):
             if self.cam_index == '':
                 vals = ['No values']
@@ -867,30 +827,31 @@ class MainWindow(QWidget):
         self.combo_box2.clear()
         self.combo_box2.addItems(values)
 
+        
     def update_modes_val(self, values):
         self.combo_box3.clear()
         self.combo_box3.addItems(values)
 
+        
     def update_whitebal_vals(self, values):
         self.combo_box4.clear()
         self.combo_box4.addItems(values)
+    
     
     def update_aper_vals(self, values):
         self.combo_box5.clear()
         self.combo_box5.addItems(values)
 
+        
     def update_image_list(self):
         self.image_list.clear()
-
         if hasattr(self, "selected_folder"):
             all_files = listdir(self.selected_folder)
             print("All files in folder:", all_files)
-
             image_files = [
                 f for f in all_files
                 if isfile(join(self.selected_folder, f))
             ]
-
             print("Image files:", image_files) 
 
             for img_file in image_files:
@@ -911,18 +872,22 @@ class MainWindow(QWidget):
         else:
             self.image_list.setText("")
 
+            
     def update_shutter_vals(self, values):
         self.combo_box6.clear()
         self.combo_box6.addItems(values)
+    
     
     def update_imgform_vals(self, values):
         self.combo_box7.clear()
         self.combo_box7.addItems(values)
 
+        
     def update_focus_vals(self, values):
         self.combo_box8.clear()
         self.combo_box8.addItems(values)
 
+        
     def update_drive_vals(self, values):
         self.combo_box9.clear()
         self.combo_box9.addItems(values)
@@ -934,8 +899,8 @@ class MainWindow(QWidget):
         else:
             print("No camera selected")
 
+            
     def refresh_gui(self):
-        
         try:
             cams, ports = cam.detect_camera()
             if not cams:
@@ -947,10 +912,8 @@ class MainWindow(QWidget):
 
         except ValueError as error:
             return [str(error)]
-        
 
     
-
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     ex = MainWindow()
